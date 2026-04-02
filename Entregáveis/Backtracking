@@ -1,0 +1,72 @@
+#BackTracking -> algoritmo exaustivo
+#EC: estado corrente -> o ponto atual (variável)
+#LE: lista de estados -> ja foi visitado (lista) -> cinza
+#LNE: lista de novos estados -> descoberto mas não visitado (lista) -> branco
+#BSS: beco sem saída -> visitado e descartado (lista) -> preto
+
+
+G = [[0, 1, 1, 1, 1],
+     [1, 0, 1, 1, 1],
+     [1, 1, 0, 1, 1],
+     [1, 1, 1, 0, 1],
+     [1, 1, 1, 1, 0]]
+
+EC = -1
+LE = []
+LNE = []
+BSS = []
+teste = []
+
+def backTracking(G, S, obj):
+    
+    #Partindo do ponto inicial
+    LE.add(S)
+    LNE.add(S)
+    EC = S
+    
+    #Busca exaustiva 
+    while( LNE != [] ):
+    
+        #Caso 1 -> EC = obj
+        if(EC == obj):
+            return LE
+        
+        #Caso 2 -> não objetivo, sem filhos
+        if(1 not in G[EC]):
+            while(LE != [] and LE[0]==EC):
+                BSS.insert(0, EC)
+                LE.pop(0)
+                LNE.pop(0)
+                EC = LNE[0]
+                LE.insert(0, EC)
+        else: #Caso 3 -> não objetivo, com filhos
+            #Pega apenas os filhos do EC
+            if(for x in G[EC][x]==1):
+                if(G[EC][x] not in BSS and LE and LNE): #Verifica se o filho ja faz parte de BSS, LE ou LNE
+                    #Coloca os filhos de EC em LNE
+                    LNE.insert(0, G[EC][x])
+            EC = LNE[0]
+            LE.insert(0, EC)
+            
+        return []
+
+teste = backTracking(G, G[0][0], B)
+    
+#testar os vértices iniciais
+#vai dar certo -> tem um caminho
+#vai falhar -> não retorna nada
+
+
+
+#1- S = objetivo:
+    #1.1- retorna LE -> o nosso caminho
+#2- S = não objetivo
+    #2.1- tem filhos
+        #coloca os filhos na LNE
+        # coloca EC na LE
+    #2.2- não tem filhos -> é folha
+        
+        
+        
+#obj = função que verifica se passou por todos os vértices apenas uma vez
+#se o grafo tem 5 vértices, meu objetivo tem que retornar 6 vértices
