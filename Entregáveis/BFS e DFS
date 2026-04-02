@@ -1,0 +1,81 @@
+# bfs e dfs
+G = [[1, 1, 1, 1],
+     [1, 1, 1, 1],
+     [1, 1, 1, 1]]
+
+class Estado:
+    
+#contrutor da nossa classe
+    def __init__(self, matriz, pai, movimento, filhos):
+        self.matriz = matriz
+        self.pai = pai
+        self.movimento = movimento
+        self.filhos = filhos
+        
+    #função
+    def gerar_filhos(estado):
+        estado = q0
+
+M = [[2, 8, 3],
+     [1, 6, 4],
+     [7, -1, 5]]
+
+inicial = Estado(M, [], ([1, 2, 4], linha, coluna), [])
+
+def movimento(posicoes, linha, coluna):
+    
+    match posicoes:
+        case 1:
+            #para cima
+            aux = M[linha-1][coluna]
+            M[linha-1][coluna] = M[linha][coluna]
+            M[linha][coluna] = aux
+        case 2:
+            #para direita
+            aux = M[linha][coluna+1]
+            M[linha][coluna+1] = M[linha][coluna]
+            M[linha][coluna] = aux
+        case 3:
+            #para baixo
+            aux = M[linha+1][coluna]
+            M[linha+1][coluna] = M[linha][coluna]
+            M[linha][coluna] = aux
+        case 4:
+            #para esquerda
+            aux = M[linha][coluna-1]
+            M[linha][coluna-1] = M[linha][coluna]
+            M[linha][coluna] = aux
+
+
+tamanho = len(G)
+print(tamanho)
+
+obj = G[2][1]
+
+
+def BFS(inicial, obj):
+    abertos = []
+    abertos.add(inicial)
+    fechados = []
+    caminho = []
+    
+    while(abertos != []):
+        x = abertos.popleft()
+        
+        if(x == obj):
+            return caminho
+        else:
+            #gera os filhos de x
+            for a in range(tamanho):
+                if(G[x][a]==1): #percorre a linha para achar os filhos
+                    if(x not in abertos and fechados):
+                        abertos.append(x)    
+            fechados.append(x)
+        return []
+            
+            
+#classe estado
+    #matriz
+    #pai
+    #movimento
+    #filhos[...]
