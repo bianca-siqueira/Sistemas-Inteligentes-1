@@ -117,10 +117,9 @@ teste = backTracking(G, 0)
 
 if(teste != []):
     print(F"{VERDE} | Busca exaustiva concluida com sucesso! Rota: " + str(teste) + RESET)
-    print("--------------------------------------------------------------")
 else:
     print(F"{VERMELHO}Busca exaustiva falhou!{RESET}")
-    print("--------------------------------------------------------------")
+print("--------------------------------------------------------------")
 
 
 
