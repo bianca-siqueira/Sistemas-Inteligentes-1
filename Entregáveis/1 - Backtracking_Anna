@@ -1,0 +1,137 @@
+#Objetivo TSP:
+# - Visitar TODOS os estados do grafo exatamente uma vez e depois retornar ao estado inicial
+
+
+# Parametros: grafo e vértice inicial
+# Retorno: caminho possível (lista dos pais)
+#BackTracking -> algoritmo exaustivo
+#EC: estado corrente -> o ponto atual (variável)
+#LE: lista de estados -> ja foi visitado (lista) -> cinza
+#LNE: lista de novos estados -> descoberto mas não visitado (lista) -> branco
+#BSS: beco sem saída -> visitado e descartado (lista) -> preto
+
+#matriz do TSP -> todos os pontos possuem arestas entre si
+# G = [[0, 1, 1, 1, 1],
+#      [1, 0, 1, 1, 1],
+#      [1, 1, 0, 1, 1],
+#      [1, 1, 1, 0, 1],
+#      [1, 1, 1, 1, 0]] 
+
+#matriz de exemplo dos slides
+
+# ----VARIAVEIS EXTRAS ----
+VERMELHO = "\033[91m"
+VERDE    = "\033[92m"
+AMARELO  = "\033[93m"
+AZUL     = "\033[94m"
+RESET    = "\033[0m"
+# --------------------------
+
+G = [[0, 1, 1, 1, 1],
+      [1, 0, 1, 1, 1],
+      [1, 1, 0, 1, 1],
+      [1, 1, 1, 0, 1],
+      [1, 1, 1, 1, 0]] 
+   
+
+
+tamanho = len(G)
+
+EC = -1     # Estado Corrente: Quem está sendo analisado
+teste = []
+
+'''
+#função objetivo do TSP 
+def TSP(G, obj):
+    #obj é achar uma rota visitando todos os pontos 
+    #não estamos considerando o valor de rota -> menor rota possível (não é o caso)
+
+
+    return resposta
+'''
+
+def TSP(EC, LE, S):
+    # Objetivo: achar uma rota que visita todos os pontos
+    visitados = 0
+    retorno = 0
+    if(len(LE) == tamanho): #Verifica se visitou todos os estados de acordo com o tamanho do grafo
+        visitados = 1
+    #Existe um caminho do estado objetivo para o estado incial? Se sim, retorna verdadeiro
+    if G[EC][S] > 0:
+        retorno = 1
+    return visitados and retorno
+
+def backTracking(G, S):
+    LE = []     # Lista de Estados: Estados do caminho percorrido
+    LNE = []    # Lista de novos estados:  Foram gerados mas não buscados
+    BSS = []   
+
+    #Partindo do ponto inicial
+    LE.append(S)  #Adiciona estado inicial na lista de caminhos
+    LNE.append(S) # Adiciona S na lista de estados a serem buscados
+    EC = S
+    
+    #Busca exaustiva 
+    while(LNE != [] ): #Enquanto lista de novos estados não estiver vazia (não ter terminado de analisar todos)
+        
+        
+        # Gera todos os filhos válidos
+        filhos_validos = [] #inicializa os filhos válidos do estado ATUAL
+        for x in range(tamanho-1,-1,-1): #Ultimo valor até o primeiro, fazendo o filho da extrema esquerda ser adicionado em ordem
+            if  G[EC][x] == 1 and x not in BSS and x not in LE: #verificação que evita ciclos
+                filhos_validos.insert(0,x)
+        
+        # CASO 1: Estado objetivo
+        if TSP(EC,LE,S):
+            if LE[0] != EC:
+                LE.insert(0,EC) # só adiciona o estado destino se ele não estiver na lista ainda
+            
+            LE.insert(0,S)  # Insere na lista de caminhos o estado inicial novamente para indicar a volta para o inicio!
+            return LE    
+        
+        #CASO 2: Não objetivo, sem filhos
+        # - BECO SEM SAÍDA
+        if (filhos_validos == []): 
+            #retira de todas as listas possíveis
+            # Só tem o loop de fora para fazer a verificação apenas 1 vez
+            BSS.append(EC)
+            LNE.pop(0)
+            if LE[0] == EC: #remove o primeiro elemento somente se EC estiver na lista
+                LE.pop(0)
+            if LNE:
+                EC = LNE[0]
+            else: break
+        
+        #CASO 3: Não objetivo, mas com filhos
+        else:
+            #Adiciona todos os filhos validos na lista de novos estados
+            for i in reversed(filhos_validos): # for de decrementação
+                LNE.insert(0,i)
+            EC = LNE[0]
+            LE.insert(0,EC)
+
+    return []
+
+print(" --------------------- INICIANDO A BUSCA ---------------------")
+teste = backTracking(G, 0)
+
+if(teste != []):
+    print(F"{VERDE} | Busca exaustiva concluida com sucesso! Rota: " + str(teste) + RESET)
+    print("--------------------------------------------------------------")
+else:
+    print(F"{VERMELHO}Busca exaustiva falhou!{RESET}")
+    print("--------------------------------------------------------------")
+
+
+
+# 0: A 1:B 2: C 3:D 4: E
+#-----------------------------------------
+#   CONSIDERAÇÕES
+#-----------------------------------------
+
+#Algoritmo principal: funcionando
+    #PROBLEMA: identificar estados como obj e armazená-los na lista de rota
+
+#Falta implementar: função do TSP   
+     #obj = função que verifica se passou por todos os vértices apenas uma vez
+     #se o grafo tem 5 vértices, meu objetivo tem que retornar 6 vértices
