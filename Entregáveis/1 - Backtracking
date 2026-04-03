@@ -4,12 +4,26 @@
 #LNE: lista de novos estados -> descoberto mas não visitado (lista) -> branco
 #BSS: beco sem saída -> visitado e descartado (lista) -> preto
 
+#matriz do TSP -> todos os pontos possuem arestas entre si
+# G = [[0, 1, 1, 1, 1],
+#      [1, 0, 1, 1, 1],
+#      [1, 1, 0, 1, 1],
+#      [1, 1, 1, 0, 1],
+#      [1, 1, 1, 1, 0]] 
 
-G = [[0, 1, 1, 1, 1],
-     [1, 0, 1, 1, 1],
-     [1, 1, 0, 1, 1],
-     [1, 1, 1, 0, 1],
-     [1, 1, 1, 1, 0]]
+#matriz de exemplo dos slides
+G = [[0, 1, 1, 1, 0, 0, 0, 0],
+     [0, 0, 0, 0, 1, 1, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0, 0, 1, 1],
+     [0, 0, 0, 0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 0]]
+
+
+tamanho = len(G)
+print(tamanho)
 
 EC = -1
 LE = []
@@ -17,11 +31,22 @@ LNE = []
 BSS = []
 teste = []
 
+'''
+#função objetivo do TSP 
+def TSP(G, obj):
+    #obj é achar uma rota visitando todos os pontos 
+    #não estamos considerando o valor de rota -> menor rota possível (não é o caso)
+
+
+    return resposta
+'''
+
+
 def backTracking(G, S, obj):
     
     #Partindo do ponto inicial
-    LE.add(S)
-    LNE.add(S)
+    LE.append(S)
+    LNE.append(S)
     EC = S
     
     #Busca exaustiva 
@@ -34,39 +59,37 @@ def backTracking(G, S, obj):
         #Caso 2 -> não objetivo, sem filhos
         if(1 not in G[EC]):
             while(LE != [] and LE[0]==EC):
-                BSS.insert(0, EC)
-                LE.pop(0)
-                LNE.pop(0)
+                BSS.append(EC)
+                LE.popleft()
+                LNE.popleft()
                 EC = LNE[0]
-                LE.insert(0, EC)
+                LE.append(EC)
         else: #Caso 3 -> não objetivo, com filhos
-            #Pega apenas os filhos do EC
-            if(for x in G[EC][x]==1):
-                if(G[EC][x] not in BSS and LE and LNE): #Verifica se o filho ja faz parte de BSS, LE ou LNE
-                    #Coloca os filhos de EC em LNE
-                    LNE.insert(0, G[EC][x])
+            for x in range(tamanho): 
+                if(G[EC][x]==1): #Selecionando apenas os filhos
+                    if(G[EC][x] not in BSS and LE and LNE): #Verifica se o filho ja faz parte de BSS, LE ou LNE
+                        #Coloca os filhos de EC em LNE
+                        LNE.append(G[EC][x])    
             EC = LNE[0]
-            LE.insert(0, EC)
+            LE.append(EC)
             
         return []
 
-teste = backTracking(G, G[0][0], B)
-    
-#testar os vértices iniciais
-#vai dar certo -> tem um caminho
-#vai falhar -> não retorna nada
+teste = backTracking(G, G[0][0], G[7][7])
+
+if(teste != []):
+    print("Busca exaustiva concluida com sucesso! Rota:" + str(teste))
+else:
+    print("Busca exaustiva falhou!")
 
 
+#-----------------------------------------
+#   CONSIDERAÇÕES
+#-----------------------------------------
 
-#1- S = objetivo:
-    #1.1- retorna LE -> o nosso caminho
-#2- S = não objetivo
-    #2.1- tem filhos
-        #coloca os filhos na LNE
-        # coloca EC na LE
-    #2.2- não tem filhos -> é folha
-        
-        
-        
-#obj = função que verifica se passou por todos os vértices apenas uma vez
-#se o grafo tem 5 vértices, meu objetivo tem que retornar 6 vértices
+#Algoritmo principal: funcionando
+    #PROBLEMA: identificar estados como obj e armazená-los na lista de rota
+
+#Falta implementar: função do TSP   
+     #obj = função que verifica se passou por todos os vértices apenas uma vez
+     #se o grafo tem 5 vértices, meu objetivo tem que retornar 6 vértices
