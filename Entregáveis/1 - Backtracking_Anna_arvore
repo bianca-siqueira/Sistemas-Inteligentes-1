@@ -1,0 +1,122 @@
+#Objetivo TSP:
+# - Visitar TODOS os estados do grafo exatamente uma vez e depois retornar ao estado inicial
+
+
+# Parametros: grafo e vértice inicial
+# Retorno: caminho possível (lista dos pais)
+#BackTracking -> algoritmo exaustivo
+#EC: estado corrente -> o ponto atual (variável)
+#LE: lista de estados -> ja foi visitado (lista) -> cinza
+#LNE: lista de novos estados -> descoberto mas não visitado (lista) -> branco
+#BSS: beco sem saída -> visitado e descartado (lista) -> preto
+
+#matriz do TSP -> todos os pontos possuem arestas entre si
+# G = [[0, 1, 1, 1, 1],
+#      [1, 0, 1, 1, 1],
+#      [1, 1, 0, 1, 1],
+#      [1, 1, 1, 0, 1],
+#      [1, 1, 1, 1, 0]] 
+
+#matriz de exemplo dos slides
+
+# ----VARIAVEIS EXTRAS ----
+VERMELHO = "\033[91m"
+VERDE    = "\033[92m"
+AMARELO  = "\033[93m"
+AZUL     = "\033[94m"
+RESET    = "\033[0m"
+# --------------------------
+
+G = [[0, 1, 1, 0, 0],
+     [0, 0, 0, 1, 1],
+     [0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0]]
+   
+
+
+tamanho = len(G)
+
+EC = -1     # Estado Corrente: Quem está sendo analisado
+LE = []     # Lista de Estados: Estados do caminho percorrido
+LNE = []    # Lista de novos estados:  Foram gerados mas não buscados
+BSS = []    # Beco sem saida: filhos não contém o objetivo
+teste = []
+
+'''
+#função objetivo do TSP 
+def TSP(G, obj):
+    #obj é achar uma rota visitando todos os pontos 
+    #não estamos considerando o valor de rota -> menor rota possível (não é o caso)
+
+
+    return resposta
+'''
+def backTracking(G, S, obj):
+    
+    #Partindo do ponto inicial
+    LE.append(S)  #Adiciona estado inicial na lista de caminhos
+    LNE.append(S) # Adiciona S na lista de estados a serem buscados
+    EC = S
+    
+    #Busca exaustiva 
+    while(LNE != [] ): #Enquanto lista de novos estados não estiver vazia (não ter terminado de analisar todos)
+        
+        
+        # Gera todos os filhos válidos
+        filhos_validos = [] #inicializa os filhos válidos do estado ATUAL
+        for x in range(tamanho-1,-1,-1): #Ultimo valor até o primeiro, fazendo o filho da extrema esquerda ser adicionado em ordem
+            if  G[EC][x] == 1 and x not in BSS and x not in LE and x not in LNE:
+                filhos_validos.insert(0,x)
+        
+        # CASO 1: Estado objetivo
+        if (EC == obj):
+            if LE[0] != EC:
+                LE.insert(0,EC) # só adiciona o estado destino se ele não estiver na lista ainda
+            return LE    
+        
+        #CASO 2: Não objetivo, sem filhos
+        # - BECO SEM SAÍDA
+        if (filhos_validos == []): 
+            #retira de todas as listas possíveis
+            # Só tem o loop de fora
+            if(LE != [] and LNE != []):
+                BSS.append(EC)
+                LNE.pop(0)
+                if LE[0] == EC: #remove o primeiro elemento somente se EC estiver na lista
+                    LE.pop(0)
+                if LNE:
+                    EC = LNE[0]
+                else: break
+        
+        #CASO 3: Não objetivo, mas com filhos
+        else:
+            #Adiciona todos os filhos validos na lista de novos estados
+            for i in reversed(filhos_validos):
+                LNE.insert(0,i)
+            EC = LNE[0]
+            LE.insert(0,EC)
+
+    return LE
+
+print("+--------------------- INICIANDO A BUSCA ---------------------")
+teste = backTracking(G, 0, 2)
+
+if(teste != []):
+    print(F"{VERDE}| Busca exaustiva concluida com sucesso! Rota: " + str(teste) + RESET)
+    print("+-------------------------------------------------------------")
+else:
+    print(F"{VERMELHO}Busca exaustiva falhou!{RESET}")
+    print("+--------------------------------------------------------------")
+
+
+#-----------------------------------------
+#   CONSIDERAÇÕES
+#-----------------------------------------
+
+#Algoritmo principal: funcionando
+    #PROBLEMA: identificar estados como obj e armazená-los na lista de rota
+
+#Falta implementar: função do TSP   
+     #obj = função que verifica se passou por todos os vértices apenas uma vez
+     #se o grafo tem 5 vértices, meu objetivo tem que retornar 6 vértices
