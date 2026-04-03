@@ -116,7 +116,9 @@ print(" --------------------- INICIANDO A BUSCA ---------------------")
 teste = backTracking(G, 0)
 
 if(teste != []):
-    print(F"{VERDE} | Busca exaustiva concluida com sucesso! Rota: " + str(teste) + RESET)
+    print(F"{VERDE} | Busca exaustiva concluida com sucesso! Rota: " + str(teste))
+    print(f"| Estado origem: {teste[len(teste)-1]}")
+    print(f"| Estado final: {teste[0]}"+RESET)
 else:
     print(F"{VERMELHO}Busca exaustiva falhou!{RESET}")
 print("--------------------------------------------------------------")
