@@ -1,6 +1,15 @@
+# INFORMAÇÕES --------------------------------------------------------------------------------------
+
+# Alunas: 
+# LAIS AYA TANIGUCHI
+# ANNA BEATRIZ CORREIA DOS SANTOS
+# BIANCA GABRIELLY SIQUEIRA
+
+# REPOSITÓRIO GITHUB: https://github.com/bianca-siqueira/Sistemas-Inteligentes-1/blob/main/Entreg%C3%A1veis/1%20-%20Backtracking_Anna
+# ---------------------------------------------------------------------------------------------------
+
 #Objetivo TSP:
 # - Visitar TODOS os estados do grafo exatamente uma vez e depois retornar ao estado inicial
-
 
 # Parametros: grafo e vértice inicial
 # Retorno: caminho possível (lista dos pais)
@@ -9,15 +18,6 @@
 #LE: lista de estados -> ja foi visitado (lista) -> cinza
 #LNE: lista de novos estados -> descoberto mas não visitado (lista) -> branco
 #BSS: beco sem saída -> visitado e descartado (lista) -> preto
-
-#matriz do TSP -> todos os pontos possuem arestas entre si
-# G = [[0, 1, 1, 1, 1],
-#      [1, 0, 1, 1, 1],
-#      [1, 1, 0, 1, 1],
-#      [1, 1, 1, 0, 1],
-#      [1, 1, 1, 1, 0]] 
-
-#matriz de exemplo dos slides
 
 # ----VARIAVEIS EXTRAS ----
 VERMELHO = "\033[91m"
@@ -36,19 +36,8 @@ G = [[0, 1, 1, 1, 1],
 
 
 tamanho = len(G)
-
 EC = -1     # Estado Corrente: Quem está sendo analisado
-teste = []
-
-'''
-#função objetivo do TSP 
-def TSP(G, obj):
-    #obj é achar uma rota visitando todos os pontos 
-    #não estamos considerando o valor de rota -> menor rota possível (não é o caso)
-
-
-    return resposta
-'''
+caminho = []
 
 def TSP(EC, LE, S):
     # Objetivo: achar uma rota que visita todos os pontos
@@ -113,26 +102,30 @@ def backTracking(G, S):
     return []
 
 print(" --------------------- INICIANDO A BUSCA ---------------------")
-teste = backTracking(G, 0)
 
-if(teste != []):
-    print(F"{VERDE} | Busca exaustiva concluida com sucesso! Rota: " + str(teste))
-    print(f"| Estado origem: {teste[len(teste)-1]}")
-    print(f"| Estado final: {teste[0]}"+RESET)
-else:
-    print(F"{VERMELHO}Busca exaustiva falhou!{RESET}")
-print("--------------------------------------------------------------")
+while True: #While para o programa ficar ativo até o usuário encerrar
+    print("| -1: Sair do Programa")
+    entrada = input("| Defina o estado inicial: ")
+    try:
+        estado_inicial = int(entrada)
+    except ValueError:
+        print(F"{VERMELHO}| ERRO: o valor digitado não é um número válido!{RESET}")
+        continue
 
+    if estado_inicial == -1:
+        print("Finalizando o programa...")
+        break
 
+    if(estado_inicial < len(G) and estado_inicial >= 0):
+        caminho = backTracking(G, estado_inicial) #DEFINIÇÃO DO ESTADO INICIAL:
 
-# 0: A 1:B 2: C 3:D 4: E
-#-----------------------------------------
-#   CONSIDERAÇÕES
-#-----------------------------------------
+        if(caminho != []):
+            print(F"{VERDE}| Busca exaustiva concluida com sucesso! Rota: " + str(caminho))
+            print(f"| Estado origem: {caminho[len(caminho)-1]}")
+            print(f"| Estado final: {caminho[0]}"+RESET)
+        else:
+            print(F"{VERMELHO}Busca exaustiva falhou!{RESET}")
+        print("--------------------------------------------------------------")
+    else:
+        print(f"{VERMELHO}| Estado inicial [{estado_inicial}]  inválido!{RESET}")
 
-#Algoritmo principal: funcionando
-    #PROBLEMA: identificar estados como obj e armazená-los na lista de rota
-
-#Falta implementar: função do TSP   
-     #obj = função que verifica se passou por todos os vértices apenas uma vez
-     #se o grafo tem 5 vértices, meu objetivo tem que retornar 6 vértices
