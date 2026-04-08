@@ -52,7 +52,7 @@ print(tamanho)
 
 obj = G[2][1]
 
-
+#Função BFS
 def BFS(inicial, obj):
     abertos = []
     abertos.add(inicial)
@@ -72,8 +72,28 @@ def BFS(inicial, obj):
                         abertos.append(x)    
             fechados.append(x)
         return []
-            
-            
+
+#Função DFS
+def DFS(inicial, obj):
+    abertos = []
+    abertos.add(inicial)
+    fechados = []
+    caminho = []
+    
+    while(abertos != []):
+        x = abertos.pop()
+        
+        if(x == obj):
+            return caminho
+        else:
+            #gera os filhos de x
+            for a in range(tamanho):
+                if(G[x][a]==1): #percorre a linha para achar os filhos
+                    if(x not in abertos and fechados):
+                        abertos.append(x)    
+            fechados.append(x)
+        return []
+
 #classe estado
     #matriz
     #pai
