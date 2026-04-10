@@ -1,101 +1,101 @@
-# bfs e dfs
-G = [[1, 1, 1, 1],
-     [1, 1, 1, 1],
-     [1, 1, 1, 1]]
+from collections import deque
 
+#BFS -> fila
+#DFS -> pilha
+
+#matriz de exemplo
+# G1 = [[0, 1, 1, 1],
+#      [1, 0, 1, 1],
+#      [1, 1, 0, 1],
+#      [1, 1, 1, 0]]
+
+#matriz 2 de exemplo
+# G = [[0,1,1,0],
+#      [1,0,0,1],
+#      [1,0,0,1],
+#      [0,1,1,0]]
+
+#matriz 3 de exemplo
+# G = [[0,1,1,1,0],
+#      [1,0,0,0,1],
+#      [1,0,0,0,0],
+#      [1,0,0,0,0],
+#      [0,1,0,0,0]]
+
+
+#classe -> ajuda a manejar depois ao longo do código
 class Estado:
-    
-#contrutor da nossa classe
-    def __init__(self, matriz, pai, movimento, filhos):
-        self.matriz = matriz
+    def __init__(self, valor, pai=None):
+        self.valor = valor
         self.pai = pai
-        self.movimento = movimento
-        self.filhos = filhos
-        
-    #função
-    def gerar_filhos(estado):
-        estado = q0
 
-M = [[2, 8, 3],
-     [1, 6, 4],
-     [7, -1, 5]]
-
-inicial = Estado(M, [], ([1, 2, 4], linha, coluna), [])
-
-def movimento(posicoes, linha, coluna):
-    
-    match posicoes:
-        case 1:
-            #para cima
-            aux = M[linha-1][coluna]
-            M[linha-1][coluna] = M[linha][coluna]
-            M[linha][coluna] = aux
-        case 2:
-            #para direita
-            aux = M[linha][coluna+1]
-            M[linha][coluna+1] = M[linha][coluna]
-            M[linha][coluna] = aux
-        case 3:
-            #para baixo
-            aux = M[linha+1][coluna]
-            M[linha+1][coluna] = M[linha][coluna]
-            M[linha][coluna] = aux
-        case 4:
-            #para esquerda
-            aux = M[linha][coluna-1]
-            M[linha][coluna-1] = M[linha][coluna]
-            M[linha][coluna] = aux
-
-
-tamanho = len(G)
-print(tamanho)
-
-obj = G[2][1]
-
-#Função BFS
-def BFS(inicial, obj):
-    abertos = []
-    abertos.add(inicial)
-    fechados = []
+#função para contruir o caminho com base no pai daquele estado -> recursivo
+def caminho(estado):
     caminho = []
+    while estado is not None:
+        caminho.append(estado.valor)
+        estado = estado.pai
+    caminho.reverse()   #grava a lista de trás pra frente
+    return caminho
+
+# --------------------------------
+#             BFS
+# --------------------------------
+def BFS(inicial, obj, tamanho):
     
-    while(abertos != []):
+    #inicialização
+    abertos = deque()
+    abertos.append(Estado(inicial))
+    fechados = set()
+
+    while abertos != []:
         x = abertos.popleft()
-        
-        if(x == obj):
-            return caminho
-        else:
-            #gera os filhos de x
-            for a in range(tamanho):
-                if(G[x][a]==1): #percorre a linha para achar os filhos
-                    if(x not in abertos and fechados):
-                        abertos.append(x)    
-            fechados.append(x)
-        return []
 
-#Função DFS
-def DFS(inicial, obj):
+        if x.valor == obj:
+            return caminho(x)
+
+        fechados.add(x.valor)
+
+        #gerando os filhos de x
+        for w in range(tamanho):
+            if(G[x.valor][w]==1 and w not in fechados and w not in abertos):
+                abertos.append(Estado(w, x))
+
+    return []   #retorna falha
+
+# --------------------------------
+#             DFS
+# --------------------------------
+def DFS(inicial, obj, tamanho):
+
+    #inicialização
     abertos = []
-    abertos.add(inicial)
-    fechados = []
-    caminho = []
-    
-    while(abertos != []):
-        x = abertos.pop()
-        
-        if(x == obj):
-            return caminho
-        else:
-            #gera os filhos de x
-            for a in range(tamanho):
-                if(G[x][a]==1): #percorre a linha para achar os filhos
-                    if(x not in abertos and fechados):
-                        abertos.append(x)    
-            fechados.append(x)
-        return []
+    abertos.append(Estado(inicial))
+    fechados = set()
 
-#classe estado
-    #matriz
-    #pai
-    #movimento
-    #filhos[...]
+    while abertos != []:
+
+        x = abertos.pop()
+
+        #se chegou no objetivo, retorna o caminho feito
+        if x.valor == obj:
+            return caminho(x)
+
+        fechados.add(x.valor)
+
+        #gerando os filhos de x
+        for w in range(tamanho):
+            if(G[x.valor][w]==1 and w not in fechados and w not in abertos):
+                abertos.append(Estado(w, x))
+
+    return []
+
+# --------------------------------
+#  Teste -  condições para busca
+# --------------------------------
+inicio = 0
+obj = 3
+tamanho = len(G)
+
+print("BFS:", BFS(inicio, obj, tamanho))
+print("DFS:", DFS(inicio, obj, tamanho))
