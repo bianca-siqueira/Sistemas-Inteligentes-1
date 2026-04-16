@@ -1,0 +1,102 @@
+# exemplo para comparar as matrizes
+from collections import Counter
+from itertools import chain
+import numpy as np
+
+
+#----------------------------------------------------------
+#       PARAMETROS INICIAIS
+#----------------------------------------------------------
+#OBS: representamos o espaço vazio como 0 na matriz
+obj = np.array([
+          [1, 2, 3],
+          [8, 0, 4],
+          [7, 6, 5]])
+
+inicial = np.array([
+          [2, 8, 3],
+          [1, 6, 4],
+          [7, 0, 5]])
+
+caminho = []
+melhor_H = -1
+
+
+#----------------------------------------------------------
+#       FUNÇÕES AUXILIARES
+#----------------------------------------------------------
+
+def compara_matrizes (matriz_atual):
+
+  #matriz booleana entre a comparação das matrizes
+  resultado = obj == matriz_atual
+
+  #conta quantas posições que deu match entre as matrizes
+  contador = Counter(chain.from_iterable(resultado))
+
+  return contador[1]
+
+
+def movimento(posicoes, linha, coluna, M):
+    
+    match posicoes:
+        case 1:
+            #para cima
+            aux = M[linha-1][coluna]
+            M[linha-1][coluna] = M[linha][coluna]
+            M[linha][coluna] = aux
+        case 2:
+            #para direita
+            aux = M[linha][coluna+1]
+            M[linha][coluna+1] = M[linha][coluna]
+            M[linha][coluna] = aux
+        case 3:
+            #para baixo
+            aux = M[linha+1][coluna]
+            M[linha+1][coluna] = M[linha][coluna]
+            M[linha][coluna] = aux
+        case 4:
+            #para esquerda
+            aux = M[linha][coluna-1]
+            M[linha][coluna-1] = M[linha][coluna]
+            M[linha][coluna] = aux
+
+#----------------------------------------------------------
+#       ALGORITMO PRINCIPAL
+#----------------------------------------------------------
+
+def hill_climbing(matriz):
+
+  #compara para ver se é possível gerar os filhos
+  heuristica = compara_matrizes(matriz)
+
+  #mecanismo para gerar filhos
+  while(heuristica != 9):
+      #gera os filhos da matriz atual
+
+      #compara a matriz para cada filho -> for
+      #matriz = filho de maior heuristica 
+      matriz= 0
+
+  #verifica se chegou no objetivo 
+  if(matriz == obj):
+    return caminho  
+  else:
+    return []
+    
+def busca_melhor_escolha(matriz):
+
+  #inicialização
+  abertos = []
+  fechados = []
+
+  while(abertos != []):
+    x = abertos.popleft()
+
+teste = compara_matrizes(inicial)
+print(f"Grau de heurística: {teste}")
+
+
+#temos que implementar no meio do código
+# if(melhor_H < atual_H):
+#   troca_H
