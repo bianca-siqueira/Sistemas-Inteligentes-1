@@ -55,14 +55,14 @@ def movimento(posicoes, linha, coluna, M):
             M[linha-1][coluna] = M[linha][coluna]
             M[linha][coluna] = aux
         case 2:
-            #para direita
-            aux = M[linha][coluna+1]
-            M[linha][coluna+1] = M[linha][coluna]
-            M[linha][coluna] = aux
-        case 3:
             #para baixo
             aux = M[linha+1][coluna]
             M[linha+1][coluna] = M[linha][coluna]
+            M[linha][coluna] = aux
+        case 3:
+            #para direita
+            aux = M[linha][coluna+1]
+            M[linha][coluna+1] = M[linha][coluna]
             M[linha][coluna] = aux
         case 4:
             #para esquerda
