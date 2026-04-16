@@ -36,6 +36,15 @@ def compara_matrizes (matriz_atual):
 
   return contador[1]
 
+def movimento_possib(matriz_atual):
+    linha,coluna = np.where(matriz_atual == 0) 
+    mov = []
+    if(linha[0] > 0): mov.append(1)            
+    if(linha[0] < tamanho-1): mov.append(2)    
+    if(coluna[0] < tamanho-1): mov.append(3)   
+    if(coluna[0] > 0): mov.append(4)           
+    
+    return mov, linha[0],coluna[0]
 
 def movimento(posicoes, linha, coluna, M):
     
