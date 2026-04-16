@@ -46,8 +46,8 @@ def movimento_possib(matriz_atual):
     
     return mov, linha[0],coluna[0]
 
-def movimento(posicoes, linha, coluna, M):
-    
+def movimento(posicoes, linha, coluna, M_atual):
+    M = M_atual.copy()
     match posicoes:
         case 1:
             #para cima
@@ -69,29 +69,47 @@ def movimento(posicoes, linha, coluna, M):
             aux = M[linha][coluna-1]
             M[linha][coluna-1] = M[linha][coluna]
             M[linha][coluna] = aux
-
+    return M
 #----------------------------------------------------------
 #       ALGORITMO PRINCIPAL
 #----------------------------------------------------------
 
-def hill_climbing(matriz):
-
+def hill_climbing(matriz_inicial):
+  matriz = matriz_inicial.copy()
   #compara para ver se é possível gerar os filhos
-  heuristica = compara_matrizes(matriz)
+  h_atual = compara_matrizes(matriz)
 
   #mecanismo para gerar filhos
-  while(heuristica != 9):
+  while(h_atual != 9):
+      mov, linha, coluna = movimento_possib(matriz)
+      melhor_filho = None
+      melhor_h_filho = -1
+
       #gera os filhos da matriz atual
+      for a in mov:
+          M_aux = movimento(a,linha,coluna,matriz) #Cria um filho
+          h_aux = compara_matrizes(M_aux)
+            
+          if(melhor_h_filho < h_aux):
+              melhor_h_filho =  h_aux
+              melhor_filho = M_aux
+              a_aux = a
 
       #compara a matriz para cada filho -> for
       #matriz = filho de maior heuristica 
-      matriz= 0
+      #matriz= 0
+      if(melhor_h_filho > h_atual):
+          matriz = melhor_filho
+          h_atual = melhor_h_filho
+          caminho.append(a_aux)
+      else: 
+            break
 
   #verifica se chegou no objetivo 
-  if(matriz == obj):
-    return caminho  
+  if(h_atual == 9):
+         return matriz,caminho
   else:
-    return []
+        return None, []
     
 def busca_melhor_escolha(matriz):
 
