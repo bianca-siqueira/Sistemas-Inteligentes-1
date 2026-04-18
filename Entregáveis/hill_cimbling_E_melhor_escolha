@@ -14,8 +14,8 @@ obj = np.array([
           [7, 6, 5]])
 
 inicial = np.array([
-          [1, 2, 3],
-          [8, 6, 4],
+          [2, 8, 3],
+          [1, 6, 4],
           [7, 0, 5]])
 
 caminho = []
@@ -78,8 +78,8 @@ def hill_climbing(matriz_inicial):
   matriz = matriz_inicial.copy()
   #compara para ver se é possível gerar os filhos
   h_atual = compara_matrizes(matriz)
-  max_i = 1000;
-  it = 0;
+  max_i = 1000
+  it = 0
 
   #mecanismo para gerar filhos
   while(h_atual != 9 or (it < max_i)):
@@ -114,25 +114,62 @@ def hill_climbing(matriz_inicial):
         print(f'| Iterações: {it}, Heurísitca Atual: {h_atual}')
         return None, []
     
-def busca_melhor_escolha(matriz):
+def busca_melhor_escolha(matriz_inicial):
 
-  #inicialização
-  abertos = []
-  fechados = []
+    abertos = [[compara_matrizes(matriz_inicial), matriz_inicial, []]]
+    fechados = []  
 
-  while(abertos != []):
-    x = abertos.popleft()
+    while (abertos != []):
+        h_x, X, caminho_x = abertos.pop(0)
+
+        if(np.array_equal(X, obj)):
+            return X, caminho_x
+        else:
+            #gerar filhos de X
+            filho_X, linha, coluna = movimento_possib(X)
+            #para cada filho de X 
+            for a in filho_X:
+                filho   = movimento(a, linha, coluna, X)
+                h_filho = compara_matrizes(filho)
+                caminho_filho = caminho_x + [a]
+
+                #verifica se filho já está em abertos ou fechados
+                existe_aberto  = next((i for i, est in enumerate(abertos)  if np.array_equal(est[1], filho)), None)
+                existe_fechado = next((i for i, est in enumerate(fechados) if np.array_equal(est[1], filho)), None)
+
+                #casos:
+                if (existe_aberto is None and existe_fechado is None):
+                    abertos.append([h_filho, filho, caminho_filho])
+
+                elif (existe_aberto is not None):
+                    if (h_filho > abertos[existe_aberto][0]):
+                        abertos[existe_aberto] = [h_filho, filho, caminho_filho]
+
+                elif (existe_fechado is not None):
+                    if (h_filho > fechados[existe_fechado][0]):
+                        fechados.pop(existe_fechado)
+                        abertos.append([h_filho, filho, caminho_filho])
+
+        #coloca X em fechados
+        fechados.append([h_x, X, caminho_x])
+
+        #reordene os estados em abertos de acordo com o método heurístico
+        abertos.sort(key=lambda est: est[0], reverse=True)
+
+    return None, []
 
 #teste = compara_matrizes(inicial)
 #print(f"Grau de heurística: {teste}")
 
 m_hill, caminho = hill_climbing(inicial)
+m_bmc, caminho_bmc = busca_melhor_escolha(inicial)
 
 if m_hill is not None:
     print("| Objetivo Encontrado!")
     print(f"| Caminho percorrido: {caminho}")
     print(f"{m_hill}")
 
-#temos que implementar no meio do código
-# if(melhor_H < atual_H):
-#   troca_H
+if m_bmc is not None:
+    print("| Busca Melhor Escolha")
+    print(f"| Caminho percorrido: {caminho_bmc}")
+    print(f"{m_bmc}")
