@@ -131,7 +131,7 @@ tamanho = len(matriz_inicial)
 
 while(opcao != 3):
     print("-"*50)
-    print(f" Selecione o tipo de Heurística Desejada!")
+    print(f"| Selecione o tipo de Heurística Desejada!")
     print(f"| 1 - h1(n): Número de pecas fora do lugar\n| 2 - h2(n): Soma dos caminhos necessários")
     print(f"| 3 - Sair")
     opcao = int(input("| opção: "))
@@ -139,13 +139,13 @@ while(opcao != 3):
         case 1:
             h = 1
             matriz, caminho = a_star(matriz_inicial,h)
-            if(caminho != []): print(f"Sucesso! O caminho percorrido foi: {caminho}")
-            else: print("Erro ao aálisar!") 
+            if(caminho != []): print(f"| Sucesso! O caminho percorrido foi: {caminho}\n"+ "-"*50)
+            else: print("Erro ao analisar!") 
         case 2:
             h = 2
             matriz, caminho = a_star(matriz_inicial,h)
-            if(caminho != []): print(f"Sucesso! O caminho percorrido foi: {caminho}")
-            else: print("Erro ao aálisar!") 
+            if(caminho != []): print(f"| Sucesso! O caminho percorrido foi: {caminho}\n"+ "-"*50)
+            else: print("Erro ao analisar!") 
         case 3:
             print(f"| Saindo...")
             exit(1)
