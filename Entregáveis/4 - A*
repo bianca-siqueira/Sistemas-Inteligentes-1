@@ -22,8 +22,8 @@ def h2(matriz_atual):
         for coluna in range(len(matriz_atual)):
             peca = matriz_atual[linha][coluna]
             if(peca != 0):
-                posicao = np.argwhere(obj == peca)[0]                # Encontra a posicao obj
-                h += (posicao[0] - linha) + (posicao[1] - coluna)    # Calcula o caminho
+                posicao = np.argwhere(obj == peca)[0]                      # Encontra a posicao obj
+                h += abs(posicao[0] - linha) + abs(posicao[1] - coluna)    # Calcula o caminho
     return  h
 
 def movimento_possib(matriz_atual):
