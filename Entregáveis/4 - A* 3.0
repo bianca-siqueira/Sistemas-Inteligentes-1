@@ -1,0 +1,163 @@
+from collections import Counter
+from itertools import chain
+import numpy as np
+
+#----------------------------------------------------------
+#       FUNÇÕES AUXILIARES
+#----------------------------------------------------------
+
+# H1(N): PEÇAS QUE ESTÃO NO LUGAR ERRADO
+def h1(matriz_atual):
+  
+  resultado = obj == matriz_atual
+  h = Counter(chain.from_iterable(resultado))   #conta quantas posições que deu match entre as matrizes
+  return h[0]
+
+
+# H2(N): SOMA DOS CAMINHO QUE PRECISAM QUE SER FEITOS POR CADA PEÇA
+def h2(matriz_atual): 
+    h = 0
+     
+    for linha in range(len(matriz_atual)):
+        for coluna in range(len(matriz_atual)):
+            peca = matriz_atual[linha][coluna]
+            if(peca != 0):
+                posicao = np.argwhere(obj == peca)[0]                      # Encontra a posicao obj
+                h += abs(posicao[0] - linha) + abs(posicao[1] - coluna)    # Calcula o caminho
+    return  h
+
+def movimento_possib(matriz_atual):
+    linha,coluna = np.where(matriz_atual == 0) 
+    mov = []
+    if(linha[0] > 0): mov.append(1)            
+    if(linha[0] < tamanho-1): mov.append(2)    
+    if(coluna[0] < tamanho-1): mov.append(3)   
+    if(coluna[0] > 0): mov.append(4)           
+    
+    return mov, linha[0],coluna[0]
+
+def movimento(posicoes, linha, coluna, M_atual):
+    M = M_atual.copy()
+    match posicoes:
+        case 1:
+            #para cima
+            aux = M[linha-1][coluna]
+            M[linha-1][coluna] = M[linha][coluna]
+            M[linha][coluna] = aux
+        case 2:
+            #para baixo
+            aux = M[linha+1][coluna]
+            M[linha+1][coluna] = M[linha][coluna]
+            M[linha][coluna] = aux
+        case 3:
+            #para direita
+            aux = M[linha][coluna+1]
+            M[linha][coluna+1] = M[linha][coluna]
+            M[linha][coluna] = aux
+        case 4:
+            #para esquerda
+            aux = M[linha][coluna-1]
+            M[linha][coluna-1] = M[linha][coluna]
+            M[linha][coluna] = aux
+    return M
+
+#----------------------------------------------------------
+#       ALGORITMO PRINCIPAL
+#----------------------------------------------------------
+def a_star(matriz_inicial,h, iteracoes):
+    heuristicas = {1:h1, 2: h2}
+    g0 = 0
+    h0 = heuristicas[h](matriz_inicial)
+    f0 = g0 + h0
+    
+    abertos  = [[f0, g0, matriz_inicial, []]]
+    fechados = []  
+    iteracao = 0
+    
+    while (abertos != []):
+
+        if iteracao >= iteracoes:  
+            return None, None
+        iteracao +=1
+        
+        abertos.sort(key=lambda est: est[0]) # Ordena os abertos com a menor Heurística
+        f_x, g_x, x, caminho_x = abertos.pop(0)   # Retira o mais à esquerda
+
+        if(np.array_equal(x, obj)):
+            return x, caminho_x
+        else:
+            #gerar filhos de X
+            filho_x, linha, coluna = movimento_possib(x)
+            g_filho  = g_x + 1       # soma com o gasto acumulado 
+            
+            #para cada filho de X 
+            for a in filho_x:
+                filho   = movimento(a, linha, coluna, x)
+                h_filho = heuristicas[h](filho)
+                f_filho = g_filho + h_filho
+                caminho_filho = caminho_x + [a]
+
+                #verifica se filho já está em abertos ou fechados
+                existe_aberto  = next((i for i, est in enumerate(abertos)  if np.array_equal(est[2], filho)), None)
+                existe_fechado = next((i for i, est in enumerate(fechados) if np.array_equal(est[2], filho)), None)
+                
+                #casos:
+                if (existe_aberto is None and existe_fechado is None):
+
+                    abertos.append([f_filho, g_filho, filho, caminho_filho])
+
+                elif (existe_aberto is not None):
+                    if (f_filho < abertos[existe_aberto][0]):
+                        abertos[existe_aberto] = [f_filho, g_filho, filho, caminho_filho]
+
+                elif (existe_fechado is not None):
+                    if (f_filho < fechados[existe_fechado][0]):
+                        fechados.pop(existe_fechado)
+                        abertos.append([f_filho, g_filho, filho, caminho_filho])
+
+        #coloca X em fechados
+        fechados.append([f_x,g_x, x, caminho_x])
+
+    return None, []
+
+# --------------------------------------------------------
+#                       MAIN
+# --------------------------------------------------------
+opcao = 0
+matriz_inicial = np.array([
+        [0, 1, 3],
+        [8, 2, 4],
+        [7, 6, 5]])
+obj = np.array([
+          [1, 2, 3],
+          [8, 0, 4],
+          [7, 6, 5]])
+tamanho = len(matriz_inicial)
+
+while(opcao != 3):
+    print("-"*50)
+    print(f"| Selecione o tipo de Heurística Desejada!")
+    print(f"| 1 - h1(n): Número de pecas fora do lugar\n| 2 - h2(n): Soma dos caminhos necessários")
+    print(f"| 3 - Sair")
+    opcao = int(input("| opção: "))
+    match(opcao):
+        case 1:
+            h = 1
+            matriz, caminho = a_star(matriz_inicial,h, iteracoes=1000)
+            if(caminho is not None): print(f"| Sucesso! O caminho percorrido foi: {caminho}\n"+ "-"*50)
+            elif caminho is None:
+                print(f"| Limite de iterações atingido. Não foi possível encontrar solução.")
+                print("-" * 50)
+
+            else: print("Erro ao analisar!") 
+        case 2:
+            h = 2
+            matriz, caminho = a_star(matriz_inicial,h, iteracoes=1000)
+            if(caminho is not None): print(f"| Sucesso! O caminho percorrido foi: {caminho}\n"+ "-"*50)
+            elif caminho is None:
+                print(f"| Limite de iterações atingido. Não foi possível encontrar solução.")
+                print("-" * 50)
+            else: print("Erro ao analisar!") 
+        case 3:
+            print(f"| Saindo...")
+            exit(1)
