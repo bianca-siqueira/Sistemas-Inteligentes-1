@@ -1,0 +1,148 @@
+import numpy as np
+import random
+
+#----------------------------------------------------------
+#       FUNÇÕES AUXILIARES - MOVIMENTAÇÃO
+#----------------------------------------------------------
+
+def movimento_possib(matriz_atual):
+    linha,coluna = np.where(matriz_atual == 0)
+    mov = []
+    if(linha[0] > 0): mov.append(1)
+    if(linha[0] < tamanho-1): mov.append(2)
+    if(coluna[0] < tamanho-1): mov.append(3)
+    if(coluna[0] > 0): mov.append(4)
+
+    return mov, linha[0],coluna[0]
+
+def movimento(posicoes, linha, coluna, M_atual):
+    M = M_atual.copy()
+    match posicoes:
+        case 1:
+            #para cima
+            aux = M[linha-1][coluna]
+            M[linha-1][coluna] = M[linha][coluna]
+            M[linha][coluna] = aux
+        case 2:
+            #para baixo
+            aux = M[linha+1][coluna]
+            M[linha+1][coluna] = M[linha][coluna]
+            M[linha][coluna] = aux
+        case 3:
+            #para direita
+            aux = M[linha][coluna+1]
+            M[linha][coluna+1] = M[linha][coluna]
+            M[linha][coluna] = aux
+        case 4:
+            #para esquerda
+            aux = M[linha][coluna-1]
+            M[linha][coluna-1] = M[linha][coluna]
+            M[linha][coluna] = aux
+    return M
+
+def aplica_sequencia(matriz, sequencia, aux=False):
+    estado = matriz.copy()
+    caminho = []
+
+    for mov in sequencia:
+        movs_validos, lin, col = movimento_possib(estado)
+        if mov in movs_validos:
+            estado = movimento(mov, lin, col, estado)
+            if aux:
+                caminho.append(mov)
+            if aux and np.array_equal(estado, obj):
+                break
+
+    if aux:
+        print(f"Caminho percorrido: {', '.join(map(str, caminho))}")
+    return estado
+
+def AvaliaFitness(individuo):
+  estado_final = aplica_sequencia(matriz_inicial, individuo)
+  distancia = 0
+  for valor in range(1, tamanho * tamanho):
+      lin_atual, col_atual = np.where(estado_final == valor)
+      lin_obj, col_obj = np.where(obj == valor)
+      distancia += abs(lin_atual[0] - lin_obj[0]) + abs(col_atual[0] - col_obj[0])
+  return(distancia)
+
+def SelecionaComSubstituicao(populacao, valoresDeFitness, k = 3, debug = False):
+  pop = random.sample(range(len(populacao)), k)
+  melhor = min(pop, key=lambda i: valoresDeFitness[i])
+  return populacao[melhor][:]
+
+def Crossover(pai1, pai2):
+    pc = random.randint(1, len(pai1) - 2)
+    filho1 = pai1[:pc + 1] + pai2[pc + 1:]
+    filho2 = pai2[:pc + 1] + pai1[pc + 1:]
+    return filho1, filho2
+
+def mutacao(individuo, prob_mutacao=0.05):
+    individuo = individuo[:]
+    for i in range(len(individuo)):
+        if random.random() < prob_mutacao:
+            individuo[i] = random.randint(1, 4)
+    return individuo
+#----------------------------------------------------------
+#       ALGORITMO PRINCIPAL
+#----------------------------------------------------------
+
+def AG():
+
+  popsize = 10
+  P = []
+  melhor = None
+
+  for i in range(popsize):
+    P.append([random.randint(1, 4) for _ in range(COMPRIMENTO_INDIVIDUO)])
+
+  while True:
+    valoresDeFitness = []
+
+    for individuo in P:
+      valoresDeFitness.append(AvaliaFitness(individuo))
+
+    melhor_ids = min(range(len(P)), key=lambda i: valoresDeFitness[i])
+
+    if melhor is None or valoresDeFitness[melhor_ids] < AvaliaFitness(melhor):
+        melhor = P[melhor_ids].copy()
+
+    if AvaliaFitness(melhor) == 0:
+        return melhor
+
+    Q = []
+    for i in range(popsize // 2):
+      pai1 = SelecionaComSubstituicao(P, valoresDeFitness)
+      pai2 = SelecionaComSubstituicao(P, valoresDeFitness)
+
+      filho1, filho2 = Crossover(pai1.copy(), pai2.copy())
+
+      filho1 = mutacao(filho1)
+      filho2 = mutacao(filho2)
+
+      Q.append(filho1)
+      Q.append(filho2)
+
+    P = Q
+
+  return melhor
+
+# --------------------------------------------------------
+#                       MAIN
+# --------------------------------------------------------
+
+matriz_inicial = np.array([
+        [0, 1, 3],
+        [8, 2, 4],
+        [7, 6, 5]])
+
+obj = np.array([
+          [1, 2, 3],
+          [8, 0, 4],
+          [7, 6, 5]])
+
+tamanho = 3
+COMPRIMENTO_INDIVIDUO = 50
+
+solucao = AG()
+aplica_sequencia(matriz_inicial, solucao, aux=True);
