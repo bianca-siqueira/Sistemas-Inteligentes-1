@@ -1,0 +1,144 @@
+#Conjunto de treinamento -> cria modelo, conhecimento
+#Conjunto de teste -> avalia
+
+#1-50 -> setosa 
+#51-100 -> versicolor 
+#101-150 -> virgnica 
+
+#(35 x 15)
+
+#train  - 35 * 3 = 105 exemplos
+#teste - 15 * 3 = 45 exemplos
+
+#holdout --> validacao cruzada (x) -> leave one out
+
+# ---------------------------------------------
+#     ESCOLHA DO MODELO
+# ---------------------------------------------
+
+#obs: rodar a variavel tipo antes de definir o modelo
+#tipo = "classificacao"
+
+if(tipo == "classificacao"){
+  data = iris
+  
+  ids.setosa     = 1:35
+  ids.versicolor = 51:85
+  ids.virginica  = 101:135
+  ids.treinamento = c(ids.setosa, ids.versicolor,ids.virginica)
+  
+  treinamento = iris[ids.treinamento, ]
+  teste       = iris[-ids.treinamento, ]
+  
+}else{
+  data = iris[, c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")]
+
+  ids.treinamento = 1:105
+  
+  treinamento = data[ids.treinamento, ]
+  teste = data[-ids.treinamento, ]
+}
+
+# ---------------------------------------------
+#     FUNÇÕES AUXILIARES
+# ---------------------------------------------
+
+fd = function(v1, v2) {
+  #ret = sqrt(sum((v1[1:4] - v2[1:4])^2))
+  N = length(v1)
+  ret = sqrt(sum((v1[-N] - v2[-N])^2))
+  return(ret)
+}
+
+getMode = function(x) {
+  ux = unique(x)
+  tab = tabulate(match(x, ux))
+  return(ux[tab == max(tab)])
+}
+
+# ---------------------------------------------
+#     FUNÇÃO PRINCIPAL - ALGORITMO
+# ---------------------------------------------
+
+# k: quantidade vizinhos mais proximos
+# fd: função de distancia
+# treinamento: conjunto de treinamento
+# exemplo: vetor de teste
+
+#KNN(k, fd, treinamento, teste) -> estrutura da nossa função
+
+kNN = function(k = 3, fd = fd, 
+               treinamento = treinamento,
+               exemplo, tipo) {
+  
+  #1. Distancia entre exemplo de teste e todas as linhas do conjunto de treinamento
+  distancias = array(data=0, dim=nrow(treinamento))
+  for (i in 1:nrow(treinamento)) {
+    distancias[i] = fd(v1 = exemplo, 
+                       v2 = treinamento[i, ])
+  }
+  
+  #2. Ordenar o vetor de distancias
+  distanciasOrdenadas = order(distancias, 
+                              decreasing = FALSE)
+  
+  #3. Acessar os k melhores -> do menor para o maior (FALSE)
+  ids.melhores = distanciasOrdenadas[1:k]
+  
+  #4. Definir a classe
+  melhores = treinamento[ids.melhores, ]
+  
+  #5. Retorna a predição de acorod com o modelo
+  if(tipo == "classificacao"){
+    ret = getMode(x = melhores[, ncol(melhores)])
+  }else{
+    ret = mean(as.numeric(melhores[, ncol(melhores)]))
+  }
+  
+  return(ret)
+}
+
+# ---------------------------------------------
+#     FUNÇÃO DE TESTE
+# ---------------------------------------------
+
+kNNTeste = function(treinamento, k, fd, teste, tipo) {
+  
+  #45 iteracoes (nrow(teste))
+  predicoes = lapply(1:nrow(teste), function(i){
+    
+    exemplo = teste[i,]
+    #print(exemplo)
+    pred =  kNN(k=k, fd=fd, 
+                treinamento=treinamento, 
+                exemplo=exemplo, tipo=tipo)
+    #print(pred)
+    return(pred)
+    
+  }) 
+  
+  predicoes = unlist(predicoes)
+  
+  if(tipo == "classificacao"){
+    acc = sum(teste$Species == predicoes)/nrow(teste)
+    cat(" *k =", k , "Acc = ", acc, "\n")
+    
+    return(acc)
+  }else{
+    real = teste[, ncol(teste)]
+    erro_medio = mean(abs(real-predicoes))
+    rmse = sqrt(mean((real-predicoes)^2))
+    
+    cat("Erro médio absoluto = ", erro_medio, "\n")
+    cat("RMSE = ", rmse, "\n")
+    
+    return(list(Erro_medio_absoluto=erro_medio, RMSE=rmse, Predicoes=predicoes))
+  }
+}
+
+#chamando a função de teste
+for(k in 1:9) {
+  print(k)
+  resultado = kNNTeste(treinamento=treinamento, 
+                 k=k, fd=fd, teste=teste, tipo="classificacao")
+}
