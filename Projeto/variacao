@@ -1,1 +1,7 @@
 modificamos as tabelas da internet para fazermos a nossa propria
+
+BIBLIOTECAS NECESSÁRIAS:
+
+pip install customtkinter
+pip install pillow
+pip install bcrypt
