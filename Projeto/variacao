@@ -5,3 +5,8 @@ BIBLIOTECAS NECESSÁRIAS:
 pip install customtkinter
 pip install pillow
 pip install bcrypt
+
+-> EXECUÇÃO
+1: Rodar banco.py 
+2: Rodar ini_banco.py
+3: rodar python main.py
