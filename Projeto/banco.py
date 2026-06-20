@@ -15,8 +15,18 @@ def criar_tabela():
             senha BLOB NOT NULL
         )
     """)
+    consulta.execute("""
+        CREATE TABLE IF NOT EXISTS avaliacoes (
+            id      INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario TEXT NOT NULL,
+            ISBN    TEXT NOT NULL,
+            nota    INTEGER NOT NULL,
+            FOREIGN KEY (usuario) REFERENCES usuarios (usuario))
+        """)
+    
     conexao.commit()
     conexao.close()
+
 def cadastrar_usuario(usuario, senha):
     try:
         hash_senha = bcrypt.hashpw(
@@ -57,3 +67,12 @@ def verificar_login(usuario, senha):
         senha.encode('utf-8'),
         hash_salvo
     )
+
+def adicionar_avaliacao(usuario,ISBN,nota):
+    conexao = conectar()
+    consulta = conexao.cursor()
+
+    consulta.execute(
+        "INSERT INTO avaliacoes (usuario, ISBN, nota) VALUES (?,?,?)",(usuario,ISBN,nota))
+    conexao.commit()
+    conexao.close()
