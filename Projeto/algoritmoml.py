@@ -21,57 +21,65 @@
 
 #Usar modelo - Fatoração de Matrizes - deep learning
 
-# Colunas: Livros
-# Linhas:  Usuarios
-# Valor l-c: Avaliação do usuario
-
-#       2 Colunas iguais: filmes parecidos
-#       (1)(2) + (2)(2) = (3)(2) uma pessoa que gosta das duas categorias
-#       (all)(2) e (all)(3) = filmes parecidos
-
-# SUB MATRIZES:
-# R = P * Q^t
-#   R: matriz original: usuarios(m) x livros(n)
-#   P: m * k (gostos ocultos, dimensões terinadas)
-#   Q: n*k   (vetor)
-#   nota usuario: produto escalar: r = (p *q) + media_glob
-
-
-
-#   
-#Matriz geral é resultado de um produto de duas matrizes
-#   Matriz 1 - Usuarios: 1 se gosta de tal genero, 0 se não gosta de tal genero
-#       - O machine Learning chuta valores iniciais para se aproximar da nota do usuario (0.8, 0.2 e etc, maximo 1)
-#   Matriz 2: Valor dos generos em cada livro
-#       - O machine learning chuta valores iniciais (maximo 10 ou 5 (Estrelas))
-# OBS: aumenta os valores dos dois aos poucos até encontrar uma correspondencia com a avaliação original
-#       - Erro:  determinar quanto de diferença o algoritmo aceita ou não (troca)
-#           - EXEMPLO: avaliação oficial: 3
-#           - l-c 1.44, então o erro é: (3-1.44)^2 + todas as coluunas
-# Avaliação = quanto da "categoria" tem o que usuario gosta
-# Gosta de mais de uma categoria: soma a ponderação
-# Linhas iguais podem acontecer se duas pessoas tiverem a mesma preferência
 
 import pandas as pd #pip install openpyxl
 import sqlite3
 
 # 1: CARREGA TODAS AS AVALIAÇÕES
-# 2: faz a fatoração de matrizes
+# 2: faz a fatoração de matrizes com base nas duas matrizes unidas (planilha+banco)
 
+def conectar():
+    return sqlite3.connect("data.db")
 
-# Carrega a avaliação de TODOS os usuários para treinar a recomendação
+# Carrega todos os datasets (banco+planilha) para usar como treino
 def carregar_dataset():
     try:
-        df = pd.read_excel("Content/dataset_final.xlsx")
-        av = pd.real("Content/ratings.csv")
-        print(av.head(5))
-        return df, av
+        #df = pd.read_excel("Content/dataset_final.xlsx",dtype={'ISBN': str, 'Book-Rating': float})
+        av_dataset = pd.read_csv("Content/ratings.csv",dtype={'User-ID': str, 'ISBN': str, 'Book-Rating': float},encoding='latin-1',sep=';')
+        av_banco = avaliacoes_banco()
+        av = pd.concat([av_dataset, av_banco], ignore_index=True) #
+        av = av.drop_duplicates(subset=["User-ID", "ISBN"], keep="last")   #Mantem apenas as ultimas avaliações (retira duplicação pela ordem de empilhação da tabela) 
+
+        return av
+    
     except FileNotFoundError:
-        print("Arquivonão encontrado!")
+        print("Arquivo não encontrado!")
 
+def avaliacoes_banco():
+    conexao = conectar()
+    df_banco = pd.read_sql_query("SELECT usuario, ISBN, nota FROM avaliacoes", conexao)
+    conexao.close()
 
-#def recomendar():
+    df_banco.columns = ["User-ID","ISBN","Book-Rating"] #COlunas com mesmo nome do dataset
+    return df_banco
 
+def filtro(av):
+    cont = av['ISBN'].value_counts()
+    livros_validos = cont[cont >= 50].index
+    av = av[av['ISBN'].isin(livros_validos)] #coloca apenas livros que possuem mais de x avaliações
+    return av
 
+def recomendar():
+    #Para recomendar é preciso ter 2 sub-matrizes
+    # 1 - Livros 
+    # 2 - Usuarios
+    # Matriz de base:   usuarios + livros com as avaliações dos usuarios
+        # linhas: usuarios
+        # colunas: livros
+        # valor: avaliação
+    # Matriz algoritmo: matriz com  os valores chutados pelos algoritmos 
+        # linhas: usuarios
+        # colunas: livros
+        # valor: avaliação chutada pelo algoritmo
+    av = carregar_dataset()
+    
+    av = filtro(av)
+    matriz_base = av.pivot(index="User-ID",columns="ISBN",values="Book-Rating").fillna(0) #Organiza Tabela base, coloca valores vazios onde não está preenchido (usuarios não leram)
+    print("Matriz base criada!!")
+    print(matriz_base.head())
 
-
+recomendar()
+#OBS: o meu notebook estava gastando muita memória para processar todos os livros, portanto, vou adicionar esse filtro, mas dá pra tirar depois 
+    # para deixar ele rodando no bruto, mas vou filtrar os que possuem mais avaliações só para conseguir rodar
+#OBS: Livros que não possuem avaliação não entraram no cálculo
+#OBS: matriz_base possui valores 0 em algumas colunas pois alguns usuarios não leram alguns livros
