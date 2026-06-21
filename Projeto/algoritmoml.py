@@ -50,25 +50,61 @@ def carregar_dataset():
 
 def avaliacoes_banco():
     conexao = conectar()
-    df_banco = pd.read_sql_query("SELECT usuario, ISBN, nota FROM avaliacoes", conexao)
+    df_banco = pd.read_sql_query("SELECT usuario_id, ISBN, nota FROM avaliacoes", conexao)
     conexao.close()
-
     df_banco.columns = ["User-ID","ISBN","Book-Rating"] #COlunas com mesmo nome do dataset
+    df_banco['User-ID'] = "app_" + df_banco['User-ID'].astype(str)
     return df_banco
 
 def filtro(av):
+    
+    av_banco = avaliacoes_banco()
+    livros_banco = av_banco['ISBN'].unique()
+    usuarios_banco = av_banco['User-ID'].unique()
+
     cont = av['ISBN'].value_counts()
     livros_validos = cont[cont >= 50].index
-    av = av[av['ISBN'].isin(livros_validos)] #coloca apenas livros que possuem mais de x avaliações
 
     cont_usuarios = av['User-ID'].value_counts()
     usuarios_validos = cont_usuarios[cont_usuarios >= 5].index
-    av = av[av['User-ID'].isin(usuarios_validos)] # Usuarios que possuem apenas mais de 20 avaliações
-    return av
+    
+    filtro_livro = av['ISBN'].isin(livros_validos) | av['ISBN'].isin(livros_banco)
+    filtro_user = av['User-ID'].isin(usuarios_validos) | av['User-ID'].isin(usuarios_banco)
 
-def recomendar():
+    av_filter = av[filtro_livro & filtro_user] # Usuarios que possuem apenas mais de 4 avaliações no dataset ou que estão no aplicativo
+    return av_filter
+
+def n_recomendacoes(usuario_id, av, modelo, n):
+
+    livros_lidos = av[av['User-ID'] == usuario_id]['ISBN'].unique()   #encontra os livros que ele já leu e não recomenda
+    print(f"Já li esses livros aqui: {livros_lidos}")
+    
+    todos_livros = av['ISBN'].unique()                               
+    livros_nao_lidos = list(set(todos_livros) - set(livros_lidos))    # Retira os livros lidos do campo de livros gerais
+
+    if len(livros_lidos) <= 3:                                      # Se o usuário não possuir mais de 2 avaliações, recomenda livros populares
+        livros_populares = av['ISBN'].value_counts().head(n).index.tolist()
+        return [(isbn, "Popular Geral") for isbn in livros_populares]
+    
+    recomendacao = []
+    livros_rec = set()
+
+    for livro in livros_nao_lidos:          #Recomenda livros que não foram lidos e que a nota prevista foi alta
+        livro_limp = str(livro).strip()
+        if livro_limp in livros_rec:
+            continue
+
+        pred = modelo.predict(usuario_id,livro)
+        recomendacao.append((livro,pred.est))
+        livros_rec.add(livro_limp)
+
+    recomendacao.sort(key=lambda x: x[1],reverse=True)
+    return recomendacao[:n]
+
+def recomendar(user_id,user):
     av = carregar_dataset()
     av = filtro(av)             #Pega apenas alguns dados pro meu pc conseguir rodar
+    usuario_alvo = f"app_{user_id}"
 
     config  = Reader(rating_scale=(1,10)) # COnfiguração para identificar que Nota Minima : 1 e Nota Maxima : 10
     dados =   Dataset.load_from_df(av[['User-ID', 'ISBN', 'Book-Rating']], config) 
@@ -76,17 +112,14 @@ def recomendar():
     modelo = SVD(n_factors=15, lr_all=0.0005, n_epochs=100, biased=False) # Configura o que o modelo precisa fazer
     modelo.fit(treino)  #Inicia o algoritmo com base nas configurações acima
 
-    usuario_teste = "276725"
-    livro_teste = "034545104X"
-    
-    previsao_final = modelo.predict(usuario_teste, livro_teste)
-    
-    # O '.est' extrai a nota estimada final calculada pelo modelo
-    print(f"\n[Resultado] Nota prevista para o usuário {usuario_teste} no livro {livro_teste}: {previsao_final.est:.2f}")
 
-recomendar()
-
-#OBS: o meu notebook estava gastando muita memória para processar todos os livros, portanto, vou adicionar esse filtro, mas dá pra tirar depois 
-    # para deixar ele rodando no bruto, mas vou filtrar os que possuem mais avaliações só para conseguir rodar
+    sugestao = n_recomendacoes(usuario_alvo,av,modelo,10)
+    print(f" ========== TOP 10 LIVROS para {user} ==========")
+    for indice, (isbn, nota_prevista) in enumerate(sugestao, start=1):
+        if isinstance(nota_prevista, float):
+            print(f"{indice}º Lugar - Livro ISBN: {isbn} | Nota Estimada: {nota_prevista:.2f}")
+        else:
+            print(f"{indice}º Lugar - Livro ISBN: {isbn} | Recomendação: {nota_prevista}")
+    return sugestao
 #OBS: Livros que não possuem avaliação não entraram no cálculo
 #OBS: matriz_base possui valores 0 em algumas colunas pois alguns usuarios não leram alguns livros
