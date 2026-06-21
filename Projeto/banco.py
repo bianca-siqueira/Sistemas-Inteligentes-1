@@ -2,7 +2,9 @@ import sqlite3
 import bcrypt
 
 def conectar():
-    return sqlite3.connect("data.db")
+    conexao = sqlite3.connect("data.db")
+    conexao.execute("PRAGMA foreign_keys = ON;")
+    return conexao
 
 def criar_tabela():
     conexao = conectar()
@@ -18,10 +20,10 @@ def criar_tabela():
     consulta.execute("""
         CREATE TABLE IF NOT EXISTS avaliacoes (
             id      INTEGER PRIMARY KEY AUTOINCREMENT,
-            usuario TEXT NOT NULL,
+            usuario_id INTEGER NOT NULL,
             ISBN    TEXT NOT NULL,
             nota    INTEGER NOT NULL,
-            FOREIGN KEY (usuario) REFERENCES usuarios (usuario))
+            FOREIGN KEY (usuario_id) REFERENCES usuarios (id))
         """)
     
     conexao.commit()
@@ -51,7 +53,7 @@ def verificar_login(usuario, senha):
     consulta = conexao.cursor()
 
     consulta.execute(
-        "SELECT senha FROM usuarios WHERE usuario = ?",
+        "SELECT id, senha FROM usuarios WHERE usuario = ?",
         (usuario,)
     )
 
@@ -61,18 +63,27 @@ def verificar_login(usuario, senha):
     if resultado is None:
         return False
 
-    hash_salvo = resultado[0]
+    usuario_id = resultado[0]
+    hash_salvo = resultado[1]
 
-    return bcrypt.checkpw(
-        senha.encode('utf-8'),
-        hash_salvo
-    )
+    if bcrypt.checkpw(senha.encode('utf-8'), hash_salvo):
+        return usuario_id
+    else:
+        return None
+    
+def obter_user_id(username):
+    conexao = conectar()
+    consulta = conexao.cursor()
+    consulta.execute("SELECT id FROM usuarios WHERE usuario = ?", (username,))
+    resultado = consulta.fetchone()
+    conexao.close()
+    return resultado[0] if resultado else None
 
-def adicionar_avaliacao(usuario,ISBN,nota):
+def adicionar_avaliacao(usuario_id,ISBN,nota):
     conexao = conectar()
     consulta = conexao.cursor()
 
     consulta.execute(
-        "INSERT INTO avaliacoes (usuario, ISBN, nota) VALUES (?,?,?)",(usuario,ISBN,nota))
+        "INSERT INTO avaliacoes (usuario_id, ISBN, nota) VALUES (?,?,?)",(usuario_id,ISBN,nota))
     conexao.commit()
     conexao.close()
