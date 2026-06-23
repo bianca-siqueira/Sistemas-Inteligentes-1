@@ -5,6 +5,10 @@ BIBLIOTECAS NECESSÁRIAS:
 pip install customtkinter
 pip install pillow
 pip install bcrypt
+pip install pandas
+pip install openpyxl
+pip install scikit-surprise
+pip install numpy
 
 -> EXECUÇÃO
 1: Rodar banco.py 
