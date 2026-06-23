@@ -8,14 +8,23 @@ como dataset do projeto, selecionando apenas as colunas de interesse dos dois ar
 BIBLIOTECAS NECESSÁRIAS:
 
 pip install customtkinter
+
 pip install pillow
+
 pip install bcrypt
+
 pip install pandas
+
 pip install openpyxl
+
 pip install scikit-surprise
+
 pip install numpy
 
 -> EXECUÇÃO
+
 1: Rodar banco.py 
+
 2: Rodar ini_banco.py
+
 3: rodar python main.py
