@@ -1,6 +1,8 @@
 import customtkinter as ctk
 from tkinter import messagebox 
 from banco import verificar_login
+from algoritmoml import recomendar
+from cadastro import tela_cadastro
 
 # Importar a biblioteca PIllow para arredondar os cantos
 try:
@@ -14,10 +16,12 @@ except ImportError:
 #       CORES
 #=============================
 
-FUNDO   = "#0d0d0d"
-LARANJA = "#E8621A"
-BRANCO  = "#FFFFFF" 
-TEXTO   = "#FFFFFF"
+#FUNDO   = "#0d0d0d"
+FUNDO   = "#1C3241"
+#LARANJA = "#E8621A"
+LARANJA = "#E7E1D5"
+BRANCO  = "#000000" 
+TEXTO   = "#000000"
 CINZA   = "#F5F5F5"
 
 def tela_login(janela):
@@ -31,8 +35,8 @@ def tela_login(janela):
 
     if PIL_disponível:
         try:
-            logo = ctk.CTkImage(Image.open("content/logo.png"), size=(110, 110))
-            ctk.CTkLabel(janela, image=logo, text="", fg_color=FUNDO).pack(pady=(40, 10))
+            logo = ctk.CTkImage(Image.open("content/logo.png"), size=(180, 153))
+            ctk.CTkLabel(janela, image=logo, text="", fg_color=FUNDO).pack(pady=(10, 10))
         except FileNotFoundError:
             ctk.CTkLabel(janela, text="📚", font=("Arial", 60), fg_color=FUNDO).pack(pady=(40, 10))
     else:
@@ -50,7 +54,7 @@ def tela_login(janela):
     # card: Frame que envolve os campos de usuário
     # ===========================================
     card = ctk.CTkFrame(janela, fg_color = LARANJA,corner_radius=15,border_width=0) #FUndo laranja, canto arredondado
-    card.pack(padx=40, fill="x",pady=(40,0))
+    card.pack(padx=40, fill="x",pady=(0,0))
     
     campo_layout = ctk.CTkFrame(card, fg_color=LARANJA) #Segue a mesma estrutura do card (borda)
     campo_layout.pack(padx=30,pady=(25,10),fill='x')
@@ -101,23 +105,51 @@ def tela_login(janela):
         if not usuario or not senha:
             messagebox.showwarning("Login Inválido", "Preencha usuário e senha")
             return
-        if verificar_login(usuario,senha):
+        
+        usuario_logado = verificar_login(usuario,senha)
+
+        if usuario_logado is not None:
             messagebox.showinfo("Bem-vindo",f"{usuario}")
+            sugestoes = recomendar(usuario_logado,usuario)
         else:
             messagebox.showerror("Erro","Usuário ou senha incorretos")
             entrada_usuario.delete(0,'end') #APaga os campos preenchidos
             entrada_senha.delete(0,'end')   #Apaga os campos preenchidos
             entrada_usuario.focus()
+    
     ctk.CTkButton(
         frame_botao,
         text="Entrar",
         font=("Arial", 13, "bold"),
         fg_color=BRANCO,
         text_color=LARANJA,
-        hover_color="#f0f0f0",  # cor ao passar o mouse
+        hover_color="#242424",  # cor ao passar o mouse
         corner_radius=8,
         width=200,
         height=42,
         command=botao_login_ativo,
+    ).pack()
+
+     # ========================= 
+    #       CADASTRO
+    # ========================= 
+    def botao_cadastro():
+        janela.destroy() #Destroi a tela de login
+        janela_cadastro = ctk.CTk()
+        tela_cadastro(janela_cadastro)
+        janela_cadastro.mainloop()
+
+    ctk.CTkButton(
+        frame_botao,
+        text="Não possui conta? Cadastre-se!",
+        font=("Arial", 11),
+        fg_color="transparent",
+        text_color= "#6B8FA3",
+        hover_color=LARANJA,  # cor ao passar o mouse
+        hover=True,
+        corner_radius=8,
+        width=200,
+        height=30,
+        command=botao_cadastro,
     ).pack()
     

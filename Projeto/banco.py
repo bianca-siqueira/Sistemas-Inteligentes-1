@@ -2,7 +2,8 @@ import sqlite3
 import bcrypt
 
 def conectar():
-    conexao = sqlite3.connect("data.db")
+    conexao = sqlite3.connect("data.db",timeout=10) # Adicionado Timeout para não dar "banco closed" 
+    conexao.execute("PRAGMA journal_mode = WAL;") #Escrita e leitura simultanea
     conexao.execute("PRAGMA foreign_keys = ON;")
     return conexao
 
