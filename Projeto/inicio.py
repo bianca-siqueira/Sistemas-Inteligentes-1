@@ -172,23 +172,6 @@ def tela_inicio(janela, usuario_logado, usuario, sugestoes):
         ctk.CTkLabel(frame_livros_scrollable, text="Nenhuma recomendação disponível para este perfil.").pack(pady=40)
 
     # ==========================================
-    # CATEGORIAS
-    # ==========================================
-
-    categorias = ctk.CTkFrame(container_principal, fg_color="transparent")
-    categorias.pack(fill="x", padx=30, pady=20)
-
-    ctk.CTkLabel(categorias, text="Categorias", font=("Arial", 22, "bold")).pack(anchor="w")
-
-    frame_cat = ctk.CTkFrame(categorias, fg_color="transparent")
-    frame_cat.pack(anchor="w", pady=10)
-
-    lista = ["Romance", "Fantasia", "Terror", "Ficção", "Drama", "Mistério"]
-
-    for categoria in lista:
-        ctk.CTkButton(frame_cat, text=categoria, width=120, height=35).pack(side="left", padx=5)
-
-    # ==========================================
     # AVALIAÇÕES RECENTES
     # ==========================================
 
