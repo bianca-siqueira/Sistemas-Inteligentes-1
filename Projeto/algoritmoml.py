@@ -25,10 +25,18 @@
 import pandas as pd #pip install openpyxl
 import sqlite3
 import numpy as np
-from surprise import SVD, Dataset, Reader
+from surprise.model_selection import train_test_split
+from surprise import SVD, Dataset, Reader, accuracy
 
 # 1: CARREGA TODAS AS AVALIAÇÕES
 # 2: faz a fatoração de matrizes com base nas duas matrizes unidas (planilha+banco)
+
+#Abre o dataset de forma GLOBAL, abrindo apenas 1 vez em todo o ciclo do aplicativo
+try:
+    df = pd.read_excel("Content/dataset_final.xlsx", engine="openpyxl",usecols=['ISBN', 'Book-Title', 'Image-URL-M'], dtype={'ISBN': str},dtype_backend="pyarrow")
+except Exception as e:
+    print("Erro ao carregar dataset!",e)
+    df = None
 
 def conectar():
     return sqlite3.connect("data.db")
@@ -46,8 +54,7 @@ def carregar_dataset():
         return av
     
     except FileNotFoundError:
-        print("Arquivo não encontrado!")
-
+        raise FileNotFoundError("O arquivo 'Content/ratings.csv' não foi encontrado!")
 def avaliacoes_banco():
     conexao = conectar()
     df_banco = pd.read_sql_query("SELECT usuario_id, ISBN, nota FROM avaliacoes", conexao)
@@ -84,7 +91,7 @@ def n_recomendacoes(usuario_id, av, modelo, n):
 
     if len(livros_lidos) <= 3:                                      # Se o usuário não possuir mais de 2 avaliações, recomenda livros populares
         livros_populares = av['ISBN'].value_counts().head(n).index.tolist()
-        return [(isbn, "Popular Geral") for isbn in livros_populares]
+        return [(isbn, 10) for isbn in livros_populares]
     
     recomendacao = []
     livros_rec = set()
@@ -101,6 +108,20 @@ def n_recomendacoes(usuario_id, av, modelo, n):
     recomendacao.sort(key=lambda x: x[1],reverse=True)
     return recomendacao[:n]
 
+def retorna_url(isbn):
+    try:
+        isbn_str = str(isbn).strip().upper()
+        URL = df[df['ISBN'] ==isbn_str]
+
+        if not URL.empty:
+            url_img = URL.iloc[0]['Image-URL-M']
+            title = URL.iloc[0]['Book-Title']
+            return url_img,title
+        else: return None, "Titulo Desconhecido"
+    
+    except Exception as e:
+        print("Erro ao abrir ao tentar pegar as capas dos livros!")
+
 def recomendar(user_id,user):
     av = carregar_dataset()
     av = filtro(av)             #Pega apenas alguns dados pro meu pc conseguir rodar
@@ -108,18 +129,32 @@ def recomendar(user_id,user):
 
     config  = Reader(rating_scale=(1,10)) # COnfiguração para identificar que Nota Minima : 1 e Nota Maxima : 10
     dados =   Dataset.load_from_df(av[['User-ID', 'ISBN', 'Book-Rating']], config) 
-    treino = dados.build_full_trainset()
-    modelo = SVD(n_factors=15, lr_all=0.0005, n_epochs=100, biased=False) # Configura o que o modelo precisa fazer
+    #Test_size: porcentagem dos dados que vão para o teste
+    #   - Dados do teste ficam escondidos para usar como comparação no final
+    #Random_state: Emabaralha os dados pra não cortar apenas um grupo específico
+    treino, teste = train_test_split(dados,test_size=0.2,random_state=42) 
+    
+    modelo = SVD(n_factors=15, lr_all=0.0005, n_epochs=100, biased=True) # Configura o que o modelo precisa fazer
     modelo.fit(treino)  #Inicia o algoritmo com base nas configurações acima
+    predicao = modelo.test(teste) #Lista de Objetos que guarda as notas que são calculadas
 
+    sugestao_ini = n_recomendacoes(usuario_alvo,av,modelo,10)
+    sugestao = []
 
-    sugestao = n_recomendacoes(usuario_alvo,av,modelo,10)
-    print(f" ========== TOP 10 LIVROS para {user} ==========")
-    for indice, (isbn, nota_prevista) in enumerate(sugestao, start=1):
-        if isinstance(nota_prevista, float):
-            print(f"{indice}º Lugar - Livro ISBN: {isbn} | Nota Estimada: {nota_prevista:.2f}")
-        else:
-            print(f"{indice}º Lugar - Livro ISBN: {isbn} | Recomendação: {nota_prevista}")
+    #Adiciona o URL e o TItulo das obras recomendadas
+    for isbn,nota in sugestao_ini:
+        url,title  = retorna_url(isbn)
+        sugestao.append((isbn,nota,url,title))
+
+    Rmse = accuracy.rmse(predicao, verbose=False)
+    mse = accuracy.mae(predicao, verbose=False)
+    print(f"VALOR RMSE MÉDIO:{Rmse} \n")
+    print(f"VALOR MAE MÉDIO:{mse} \n")
+
+    print(f" ========== TOP 10 LIVROS PARA {user} ==========")
+    for indice, (isbn, nota_prevista,url,title) in enumerate(sugestao, start=1):
+        print(f"{indice}º Lugar - Título: {title} | ISBN: {isbn} | Nota Prevista: {nota_prevista:.2f}")
     return sugestao
+
 #OBS: Livros que não possuem avaliação não entraram no cálculo
 #OBS: matriz_base possui valores 0 em algumas colunas pois alguns usuarios não leram alguns livros
